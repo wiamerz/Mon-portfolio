@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './components/Home'
 import About from './components/About'
+import ProjectSection from './components/Projects'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
     <Navbar/>
     <Home/>
     <About/>
+    <ProjectSection/>
     <Footer/>
     </>
   )
