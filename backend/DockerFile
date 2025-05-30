@@ -1,20 +1,57 @@
-FROM node:18
+# FROM node:18
+
+# # Set working directory
+# WORKDIR /app
+
+# # Copy package files and install dependencies
+# COPY package*.json ./
+# RUN npm install
+
+# # Install PM2 globally
+# RUN npm install -g pm2
+
+# # Copy the rest of the code
+# COPY . .
+
+# # Expose backend port
+# EXPOSE 5000
+
+# # Start app using PM2
+# CMD ["pm2-runtime", "ecosystem.config.js"]
+
+# Use Node.js 18 LTS
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files first for better caching
 COPY package*.json ./
-RUN npm install
 
-# Install PM2 globally
+# Install dependencies
+RUN npm ci --only=production
+
+# Install PM2 globally for process management
 RUN npm install -g pm2
 
-# Copy the rest of the code
-COPY . .
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
 
-# Expose backend port
+# Copy source code
+COPY . .
+COPY ecosystem.config.js .
+
+# Change ownership to nodejs user
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose the port
 EXPOSE 5000
 
-# Start app using PM2
-CMD ["pm2-runtime", "ecosystem.config.js"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js
+
+# Start the application with PM2
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

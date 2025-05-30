@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { MapPin, Mail, Phone, Facebook, Instagram, Linkedin, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +11,8 @@ export default function ContactForm() {
   });
 
   const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', or null
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -18,6 +20,14 @@ export default function ContactForm() {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error for this field when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const validate = () => {
@@ -30,15 +40,53 @@ export default function ContactForm() {
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Reset previous status
+    setSubmitStatus(null);
+    
     const errors = validate();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-    } else {
-      setFormErrors({});
-      console.log('Form submitted:', formData);
-      // Add your email sending logic here
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormErrors({});
+
+    try {
+      // Replace with your actual backend URL
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          location: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setSubmitStatus('error');
+        console.error('Server error:', result.message);
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+      console.error('Network error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -95,7 +143,26 @@ export default function ContactForm() {
 
           {/* Right Side */}
           <div className="p-8 lg:w-1/2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Status Messages */}
+            {submitStatus === 'success' && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <p className="text-green-700 text-sm">
+                  Thank you! Your message has been sent successfully. I'll get back to you soon.
+                </p>
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-red-700 text-sm">
+                  Sorry, there was an error sending your message. Please try again or contact me directly.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Name*
@@ -106,7 +173,8 @@ export default function ContactForm() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
                 {formErrors.name && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
@@ -123,7 +191,8 @@ export default function ContactForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
                 {formErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
@@ -140,7 +209,8 @@ export default function ContactForm() {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -154,7 +224,8 @@ export default function ContactForm() {
                   name="subject"
                   value={formData.subject}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
                 {formErrors.subject && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.subject}</p>
@@ -171,7 +242,8 @@ export default function ContactForm() {
                   rows={4}
                   value={formData.message}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
                 />
                 {formErrors.message && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.message}</p>
@@ -179,12 +251,24 @@ export default function ContactForm() {
               </div>
 
               <button
-                type="submit"
-                className="bg-purple-500 text-white px-4 py-2 hover:bg-purple-600 text-sm rounded-lg font-medium transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="bg-purple-500 text-white px-6 py-3 hover:bg-purple-600 text-sm rounded-lg font-medium transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
               >
-                Submit →
+                {isSubmitting ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit</span>
+                    <span>→</span>
+                  </>
+                )}
               </button>
-            </form>
+            </div>
           </div>
         </div>
       </div>

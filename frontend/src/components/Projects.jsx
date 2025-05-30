@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Import your images
 import weatherImg from '../assets/weather.jpg';
 import constructionImg from '../assets/Construction.png';
 import recipeImg from '../assets/recipe.jpg';
