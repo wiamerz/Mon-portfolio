@@ -1,30 +1,30 @@
+version: "3.8"
+
 services:
-  mongo:
-    image: mongo
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
-  backend:
-    build: ./backend
-    container_name: backend
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mongo
-    environment:
-      - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/mydatabase
-
   frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "3000:3000"
+    build:
+      context: ./frontend
+    image: portfolio-frontend
+    restart: always
+    expose:
+      - 80
     depends_on:
       - backend
 
-volumes:
-  mongo-data:
+  backend:
+    build:
+      context: ./backend
+    image: portfolio-backend
+    restart: always
+    expose:
+      - 5000
+
+  nginx:
+    build:
+      context: ./nginx
+    image: portfolio-proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend

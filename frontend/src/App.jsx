@@ -1,9 +1,16 @@
 import React from 'react'
 import './index.css'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import Home from './components/Home'
 
 function App() {
   return (
-    <div className='font-bold flex items-center justify-center'>App</div>
+    <>
+    <Navbar/>
+    <Home/>
+    <Footer/>
+    </>
   )
 }
 
