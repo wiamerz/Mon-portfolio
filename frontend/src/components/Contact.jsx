@@ -57,7 +57,9 @@ export default function ContactForm() {
 
     try {
       // Replace with your actual backend URL
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      console.log('Sending data:', formData); // Debug log
       
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
@@ -67,7 +69,10 @@ export default function ContactForm() {
         body: JSON.stringify(formData),
       });
 
+      console.log('Response status:', response.status); // Debug log
+      
       const result = await response.json();
+      console.log('Response data:', result); // Debug log
 
       if (response.ok && result.success) {
         setSubmitStatus('success');
@@ -162,7 +167,8 @@ export default function ContactForm() {
               </div>
             )}
 
-            <div className="space-y-6">
+            {/* Form - Fixed with proper form element and onSubmit */}
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Name*
@@ -251,8 +257,7 @@ export default function ContactForm() {
               </div>
 
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isSubmitting}
                 className="bg-purple-500 text-white px-6 py-3 hover:bg-purple-600 text-sm rounded-lg font-medium transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
               >
@@ -268,7 +273,7 @@ export default function ContactForm() {
                   </>
                 )}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
